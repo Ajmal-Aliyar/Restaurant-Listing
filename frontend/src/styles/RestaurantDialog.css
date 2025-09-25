@@ -1,0 +1,46 @@
+.restaurant-dialog .MuiDialog-paper {
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  background-color: #fff ;
+  transition: all 0.3s ease-in-out;
+  min-width: 300px;
+}
+
+.restaurant-dialog .MuiDialogTitle-root {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.restaurant-dialog .MuiDialogContent-root {
+  padding: 1.5rem 0;
+}
+
+.restaurant-dialog .MuiTextField-root {
+  margin-bottom: 1.5rem;
+}
+
+.restaurant-dialog .MuiDialogActions-root {
+  padding-top: 1rem;
+}
+
+.restaurant-dialog .MuiButton-root {
+  font-weight: 600;
+  border-radius: 8px;
+  text-transform: capitalize;
+}
+
+@media (max-width: 480px) {
+  .restaurant-dialog .MuiDialog-paper {
+    padding: 1rem;
+    margin: 1rem;
+    width: 90vw;
+  }
+
+  .restaurant-dialog .MuiDialogTitle-root {
+    font-size: 1.25rem;
+  }
+}

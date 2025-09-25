@@ -1,0 +1,101 @@
+.restaurant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  /* max-width: 800px;  */
+  margin: 0 auto; 
+  /* justify-content: center; */
+  /* align-items: center; */
+}
+
+.restaurant-list-item {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.restaurant-list-item:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.restaurant-list-item .MuiListItemText-primary {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.restaurant-list-item .MuiListItemText-secondary {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+.restaurant-list-item .MuiIconButton-root {
+  color: #555;
+  transition: color 0.2s ease-in-out;
+}
+
+.restaurant-list-item .MuiIconButton-root[aria-label="edit"]:hover {
+  color: #1976d2; 
+}
+
+.restaurant-list-item .MuiIconButton-root[aria-label="delete"]:hover {
+  color: #d32f2f; 
+}
+
+@media (max-width: 600px) {
+  .restaurant-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+  .restaurant-list-item .MuiListItemSecondaryAction-root {
+    position: static;
+    transform: none;
+    margin-top: 0.5rem;
+  }
+}
+
+.confirm-dialog .MuiDialog-paper {
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  text-align: center;
+}
+
+.confirm-dialog .MuiDialogTitle-root {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.confirm-dialog .MuiDialogContent-root {
+  padding: 0 1rem;
+  font-size: 1rem;
+  color: #555;
+}
+
+.confirm-dialog .MuiDialogActions-root {
+  padding-top: 1.5rem;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.no-restaurant-message {
+  padding-top: 1.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .confirm-dialog .MuiDialog-paper {
+    padding: 1rem;
+  }
+  .confirm-dialog .MuiDialogTitle-root {
+    font-size: 1.1rem;
+  }
+}
