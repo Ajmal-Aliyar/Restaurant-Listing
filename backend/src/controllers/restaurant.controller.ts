@@ -18,7 +18,6 @@ export const getAllRestaurants = async (_req: Request, res: Response): Promise<v
 export const createRestaurant = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, address, ...restOfBody } = req.body;
-    console.log(req.body)
     const existingRestaurant = await service.findByName(name);
     if (existingRestaurant) {
       console.error(`Attempted to create a duplicate restaurant: ${name}`);
@@ -26,10 +25,11 @@ export const createRestaurant = async (req: Request, res: Response): Promise<voi
         .status(409)
         .json({ error: "A restaurant with this name already exists." });
         return
+    } else {
+      const restaurant = await service.createRestaurant({ name, ...address,...restOfBody });
+      console.log("🚀 ~ Restaurant created:", restaurant.toJSON());
+      res.status(201).json(restaurant);
     }
-    const restaurant = await service.createRestaurant({ name, ...address,...restOfBody });
-    console.log("🚀 ~ Restaurant created:", restaurant.toJSON());
-    res.status(201).json(restaurant);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
