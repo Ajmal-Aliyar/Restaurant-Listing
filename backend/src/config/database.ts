@@ -7,7 +7,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL!, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false // For Neon's SSL configuration
+      rejectUnauthorized: false 
     }
   }
 });

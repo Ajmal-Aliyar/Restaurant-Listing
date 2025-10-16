@@ -3,14 +3,15 @@ import express from 'express';
 import cors from 'cors';
 import sequelize from './config/database.js';
 import restaurantRoutes from './routes/restaurants.js';
+import { API_ENDPOINTS, DATABASE_CONFIG } from './constants/index.js';
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true }));
+app.use(cors({ origin: DATABASE_CONFIG.CLIENT_ORIGIN, credentials: true }));
 app.use(express.json());
-app.use('/api/restaurants', restaurantRoutes);
+app.use(API_ENDPOINTS.RESTAURANTS, restaurantRoutes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || DATABASE_CONFIG.DEFAULT_PORT;
 
 sequelize.sync().then(() => {
   app.listen(PORT, () => {

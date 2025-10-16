@@ -8,6 +8,14 @@ import {
   ErrorResponse 
 } from "./i-restaurant-controller.js";
 import { TYPES } from "../inversify/types.js";
+import { 
+  HTTP_STATUS, 
+  ERROR_MESSAGES, 
+  LOG_MESSAGES, 
+  SUCCESS_MESSAGES,
+  RESPONSE_TEMPLATES,
+  VALIDATION_RULES 
+} from "../constants/index.js";
 
 @injectable()
 export class RestaurantController implements IRestaurantController {
@@ -20,13 +28,13 @@ export class RestaurantController implements IRestaurantController {
   async getAllRestaurants(_req: Request, res: Response): Promise<void> {
     try {
       const restaurants = await this.service.getAllRestaurants();
-      console.log("📋 Restaurants fetched:", restaurants.length);
+      console.log(`${LOG_MESSAGES.RESTAURANTS_FETCHED} ${restaurants.length}`);
       res.json(restaurants);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      console.error("❌ Error fetching restaurants:", errorMessage);
-      const errorResponse: ErrorResponse = { error: "Failed to fetch restaurants" };
-      res.status(500).json(errorResponse);
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR;
+      console.error(LOG_MESSAGES.ERROR_FETCHING_RESTAURANTS, errorMessage);
+      const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(ERROR_MESSAGES.RESTAURANTS_FETCH_FAILED);
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(errorResponse);
     }
   }
 
@@ -34,29 +42,27 @@ export class RestaurantController implements IRestaurantController {
     try {
       const { name, address, contact }: CreateRestaurantRequest = req.body;
       
-      // Input validation
       if (!name || !address || !contact) {
-        const errorResponse: ErrorResponse = { 
-          error: "Missing required fields",
-          details: "name, address (street, city, state, zip), and contact are required"
-        };
-        res.status(400).json(errorResponse);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.MISSING_REQUIRED_FIELDS,
+          ERROR_MESSAGES.REQUIRED_FIELDS_DETAILS
+        );
+        res.status(HTTP_STATUS.BAD_REQUEST).json(errorResponse);
         return;
       }
 
-      // Check for existing restaurant
+
       const existingRestaurant = await this.service.findByName(name);
       if (existingRestaurant) {
-        console.error(`⚠️ Attempted to create duplicate restaurant: ${name}`);
-        const errorResponse: ErrorResponse = { 
-          error: "Restaurant already exists",
-          details: `A restaurant with name "${name}" already exists`
-        };
-        res.status(409).json(errorResponse);
+        console.error(`${LOG_MESSAGES.DUPLICATE_RESTAURANT_ATTEMPT} ${name}`);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.RESTAURANT_ALREADY_EXISTS,
+          `A restaurant with name "${name}" already exists`
+        );
+        res.status(HTTP_STATUS.CONFLICT).json(errorResponse);
         return;
       }
 
-      // Create restaurant with flattened address structure
       const restaurantData = {
         name,
         street: address.street,
@@ -67,16 +73,16 @@ export class RestaurantController implements IRestaurantController {
       };
 
       const restaurant = await this.service.createRestaurant(restaurantData);
-      console.log("✅ Restaurant created:", restaurant.toJSON());
-      res.status(201).json(restaurant);
+      console.log(`${LOG_MESSAGES.RESTAURANT_CREATED} ${restaurant.toJSON()}`);
+      res.status(HTTP_STATUS.CREATED).json(restaurant);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      console.error("❌ Error creating restaurant:", errorMessage);
-      const errorResponse: ErrorResponse = { 
-        error: "Failed to create restaurant",
-        details: errorMessage
-      };
-      res.status(400).json(errorResponse);
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR;
+      console.error(LOG_MESSAGES.ERROR_CREATING_RESTAURANT, errorMessage);
+      const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+        ERROR_MESSAGES.RESTAURANT_CREATION_FAILED,
+        errorMessage
+      );
+      res.status(HTTP_STATUS.BAD_REQUEST).json(errorResponse);
     }
   }
 
@@ -85,29 +91,25 @@ export class RestaurantController implements IRestaurantController {
       const id = Number(req.params.id);
       const updateData: UpdateRestaurantRequest = req.body;
 
-      // Validate ID
       if (isNaN(id)) {
-        const errorResponse: ErrorResponse = { 
-          error: "Invalid ID",
-          details: "Restaurant ID must be a valid number"
-        };
-        res.status(400).json(errorResponse);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.INVALID_ID
+        );
+        res.status(HTTP_STATUS.BAD_REQUEST).json(errorResponse);
         return;
       }
 
-      // Check if restaurant exists
       const existingRestaurant = await this.service.findById(id);
       if (!existingRestaurant) {
-        console.error(`❌ Update failed: Restaurant with ID ${id} not found`);
-        const errorResponse: ErrorResponse = { 
-          error: "Restaurant not found",
-          details: `No restaurant found with ID ${id}`
-        };
-        res.status(404).json(errorResponse);
+        console.error(`${LOG_MESSAGES.UPDATE_FAILED_NOT_FOUND} ID ${id}`);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.RESTAURANT_NOT_FOUND,
+          `No restaurant found with ID ${id}`
+        );
+        res.status(HTTP_STATUS.NOT_FOUND).json(errorResponse);
         return;
       }
 
-      // Flatten address structure if present
       let flattenedData = { ...updateData };
       if (updateData.address) {
         const { address, ...rest } = updateData;
@@ -119,24 +121,23 @@ export class RestaurantController implements IRestaurantController {
 
       const updated = await this.service.updateRestaurant(id, flattenedData);
       if (!updated) {
-        const errorResponse: ErrorResponse = { 
-          error: "Update failed",
-          details: "Failed to update restaurant"
-        };
-        res.status(500).json(errorResponse);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.UPDATE_FAILED
+        );
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(errorResponse);
         return;
       }
 
-      console.log("✅ Restaurant updated:", updated.toJSON());
+      console.log(`${LOG_MESSAGES.RESTAURANT_UPDATED} ${updated.toJSON()}`);
       res.json(updated);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      console.error("❌ Error updating restaurant:", errorMessage);
-      const errorResponse: ErrorResponse = { 
-        error: "Failed to update restaurant",
-        details: errorMessage
-      };
-      res.status(400).json(errorResponse);
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR;
+      console.error(LOG_MESSAGES.ERROR_UPDATING_RESTAURANT, errorMessage);
+      const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+        ERROR_MESSAGES.RESTAURANT_UPDATE_FAILED,
+        errorMessage
+      );
+      res.status(HTTP_STATUS.BAD_REQUEST).json(errorResponse);
     }
   }
 
@@ -144,48 +145,44 @@ export class RestaurantController implements IRestaurantController {
     try {
       const id = Number(req.params.id);
 
-      // Validate ID
       if (isNaN(id)) {
-        const errorResponse: ErrorResponse = { 
-          error: "Invalid ID",
-          details: "Restaurant ID must be a valid number"
-        };
-        res.status(400).json(errorResponse);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.INVALID_ID
+        );
+        res.status(HTTP_STATUS.BAD_REQUEST).json(errorResponse);
         return;
       }
 
-      // Check if restaurant exists
       const existingRestaurant = await this.service.findById(id);
       if (!existingRestaurant) {
-        console.error(`❌ Deletion failed: Restaurant with ID ${id} not found`);
-        const errorResponse: ErrorResponse = { 
-          error: "Restaurant not found",
-          details: `No restaurant found with ID ${id}`
-        };
-        res.status(404).json(errorResponse);
+        console.error(`${LOG_MESSAGES.DELETION_FAILED_NOT_FOUND} ID ${id}`);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.RESTAURANT_NOT_FOUND,
+          `No restaurant found with ID ${id}`
+        );
+        res.status(HTTP_STATUS.NOT_FOUND).json(errorResponse);
         return;
       }
 
       const deleted = await this.service.deleteRestaurant(id);
       if (!deleted) {
-        const errorResponse: ErrorResponse = { 
-          error: "Deletion failed",
-          details: "Failed to delete restaurant"
-        };
-        res.status(500).json(errorResponse);
+        const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+          ERROR_MESSAGES.DELETION_FAILED
+        );
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(errorResponse);
         return;
       }
 
-      console.log("✅ Restaurant deleted:", id);
-      res.json({ message: "Restaurant deleted successfully" });
+      console.log(`${LOG_MESSAGES.RESTAURANT_DELETED} ${id}`);
+      res.json(RESPONSE_TEMPLATES.SUCCESS(SUCCESS_MESSAGES.RESTAURANT_DELETED));
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      console.error("❌ Error deleting restaurant:", errorMessage);
-      const errorResponse: ErrorResponse = { 
-        error: "Failed to delete restaurant",
-        details: errorMessage
-      };
-      res.status(500).json(errorResponse);
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.UNKNOWN_ERROR;
+      console.error(LOG_MESSAGES.ERROR_DELETING_RESTAURANT, errorMessage);
+      const errorResponse: ErrorResponse = RESPONSE_TEMPLATES.ERROR(
+        ERROR_MESSAGES.RESTAURANT_DELETION_FAILED,
+        errorMessage
+      );
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json(errorResponse);
     }
   }
 }

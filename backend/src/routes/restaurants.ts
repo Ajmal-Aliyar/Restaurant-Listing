@@ -2,8 +2,8 @@ import express from 'express';
 import { IRestaurantController } from '../controllers/i-restaurant-controller.js';
 import { TYPES } from '../inversify/types.js';
 import container from '../config/inversify.config.js';
+import { API_ENDPOINTS } from '../constants/index.js';
 
-// Get controller instance from Inversify container
 const restaurantController = container.get<IRestaurantController>(TYPES.RestaurantController);
 
 const router = express.Router();
