@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import express from 'express';
 import cors from 'cors';
 import sequelize from './config/database.js';
@@ -13,8 +14,8 @@ const PORT = process.env.PORT || 5000;
 
 sequelize.sync().then(() => {
   app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT} 👍👍👍`);
+    console.log(`Server running on port ${PORT}`);
   });
 }).catch((err: Error) => {
-  console.error('Unable to connect to the database: ❌❌❌', err);
+  console.error('Unable to connect to the database:', err);
 });  
